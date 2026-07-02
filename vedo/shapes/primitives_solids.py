@@ -99,7 +99,7 @@ class Box(Mesh):
             [0.0, 1.0],
             [1.0, 1.0],
         ]
-        vtc = utils.numpy2vtk(tc)
+        vtc = utils.numpy2vtk(tc, dtype=np.float32)
         pd.GetPointData().SetTCoords(vtc)
         super().__init__(pd, c, alpha)
         self.name = "Box"
