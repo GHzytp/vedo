@@ -11,6 +11,7 @@ from vedo.shapes import (
     Cone,
     Cube,
     Cylinder,
+    ConvexHull,
     CSpline,
     KSpline,
     Line,
@@ -50,6 +51,44 @@ def test_cube() -> None:
     c = Cube(side=3)
     assert c.npoints > 0
     assert np.allclose(c.diagonal_size(), 3 * np.sqrt(3), atol=0.1)
+
+
+def test_convex_hull_skinny_points_matches_qhull() -> None:
+    scipy_spatial = pytest.importorskip("scipy.spatial")
+    points = np.array(
+        [
+            [99.74, 1.0001, 33.0479],
+            [-12.6916, 1.0002, 3.44958],
+            [-101.56, 1.0003, 26.5365],
+            [4.35763, 1.2002, 1.29742],
+            [97.9272, 1.40039, 31.4817],
+        ]
+    )
+    points[:, 1] *= 10
+
+    hull = ConvexHull(points)
+    output_to_input = [
+        int(np.argmin(np.linalg.norm(points - vertex, axis=1)))
+        for vertex in hull.vertices
+    ]
+    output_faces = sorted(
+        tuple(sorted(output_to_input[i] for i in face)) for face in hull.cells
+    )
+    expected_faces = sorted(
+        tuple(sorted(int(i) for i in face))
+        for face in scipy_spatial.ConvexHull(points).simplices
+    )
+
+    assert output_faces == expected_faces
+
+    hull.compute_normals()
+    center = hull.vertices.mean(axis=0)
+    assert all(
+        np.dot(normal, cell_center - center) > 0
+        for normal, cell_center in zip(
+            hull.celldata["Normals"], hull.cell_centers().points
+        )
+    )
 
 
 def test_cylinder() -> None:
