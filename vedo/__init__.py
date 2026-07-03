@@ -53,8 +53,9 @@ except (ModuleNotFoundError, AttributeError):
 __author__ = "Marco Musy"
 __license__ = "MIT"
 __maintainer__ = "M. Musy"
-__email__ = "marco.musy@embl.es"
+__email__ = "marco.musy@gmail.com"
 __website__ = "https://github.com/marcomusy/vedo"
+dataurl = "https://vedo.embl.es/examples/data/"
 
 
 ##########################################################################
@@ -65,7 +66,6 @@ vtk_version = (
 )
 
 installdir = os.path.dirname(__file__)
-dataurl = "https://vedo.embl.es/examples/data/"
 
 plotter_instance = None
 notebook_plotter = None
