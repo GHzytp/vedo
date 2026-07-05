@@ -364,6 +364,13 @@ def _configure_renderer_common(renderer, bg, bg2=None):
         renderer.SetBackground2(vedo.get_color(bg2))
 
 
+def _is_background_image(bg) -> bool:
+    if not isinstance(bg, str):
+        return False
+    bgname = bg.lower()
+    return any(ext in bgname for ext in (".jpg", ".jpeg", ".png"))
+
+
 def _apply_gradient_mode(renderer):
     ori = vedo.settings.background_gradient_orientation
     if ori <= 0:
@@ -662,8 +669,7 @@ class Plotter:
 
             try:
                 image_actor = None
-                bgname = str(self.backgrcol).lower()
-                if ".jpg" in bgname or ".jpeg" in bgname or ".png" in bgname:
+                if _is_background_image(self.backgrcol):
                     self.window.SetNumberOfLayers(2)
                     self.background_renderer = vtki.vtkRenderer()
                     self.background_renderer.SetLayer(0)
@@ -678,7 +684,10 @@ class Plotter:
             for i in reversed(range(shape[0])):
                 for j in range(shape[1]):
                     arenderer = vtki.vtkRenderer()
-                    _configure_renderer_common(arenderer, self.backgrcol, bg2)
+                    if image_actor:
+                        _configure_renderer_common(arenderer, bg2 or "black")
+                    else:
+                        _configure_renderer_common(arenderer, self.backgrcol, bg2)
 
                     if image_actor:
                         arenderer.SetLayer(1)
@@ -1127,7 +1136,8 @@ class Plotter:
         """
         if c is None:  # automatic black or white
             c = (0.8, 0.8, 0.8)
-            if np.sum(vedo.get_color(self.backgrcol)) > 1.5:
+            bgcol = self.renderer.GetBackground() if self.renderer else self.backgrcol
+            if np.sum(vedo.get_color(bgcol)) > 1.5:
                 c = (0.2, 0.2, 0.2)
         else:
             c = vedo.get_color(c)
@@ -1207,7 +1217,8 @@ class Plotter:
         """
         if c is None:  # automatic black or white
             c = (0.8, 0.8, 0.8)
-            if np.sum(vedo.get_color(self.backgrcol)) > 1.5:
+            bgcol = self.renderer.GetBackground() if self.renderer else self.backgrcol
+            if np.sum(vedo.get_color(bgcol)) > 1.5:
                 c = (0.2, 0.2, 0.2)
         else:
             c = vedo.get_color(c)

@@ -399,7 +399,8 @@ class CommonVisual:
         plt = vedo.current_plotter()
         if plt and c is None:  # automatic black or white
             c = (0.9, 0.9, 0.9)
-            if np.sum(vedo.get_color(plt.backgrcol)) > 1.5:
+            bgcol = plt.renderer.GetBackground() if plt.renderer else plt.backgrcol
+            if np.sum(vedo.get_color(bgcol)) > 1.5:
                 c = (0.1, 0.1, 0.1)
         if c is None:
             c = (0, 0, 0)

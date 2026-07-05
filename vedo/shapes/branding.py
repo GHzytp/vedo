@@ -16,7 +16,8 @@ def vedo_logo(distance=0.0, c=None, bc="t", version=False, frame=True):
         c = (0, 0, 0)
         plt = vedo.current_plotter()
         if plt:
-            if sum(get_color(plt.backgrcol)) > 1.5:
+            bgcol = plt.renderer.GetBackground() if plt.renderer else plt.backgrcol
+            if sum(get_color(bgcol)) > 1.5:
                 c = [0, 0, 0]
             else:
                 c = "linen"
