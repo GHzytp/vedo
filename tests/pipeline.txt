@@ -42,7 +42,6 @@ sed -i "s/dry_run_mode = 2/dry_run_mode = 0/g" $VEDODIR/vedo/settings.py  #->ENA
 
 pytest tests
 
-cd $VEDODIR/tests/common && ./run_all.sh 
 cd $VEDODIR/tests/issues && ./run_all.sh 
 cd $VEDODIR/tests/snippets && ./run_all.sh 
 
