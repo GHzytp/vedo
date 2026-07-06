@@ -358,6 +358,9 @@ def _configure_renderer_common(renderer, bg, bg2=None):
         renderer.SetOcclusionRatio(vedo.settings.occlusion_ratio)
     renderer.SetUseFXAA(vedo.settings.use_fxaa)
     renderer.SetPreserveDepthBuffer(vedo.settings.preserve_depth_buffer)
+    if _is_background_image(bg) or _is_skybox_background(bg):
+        bg = bg2 or "black"
+        bg2 = None
     renderer.SetBackground(vedo.get_color(bg))
     if bg2:
         renderer.GradientBackgroundOn()
@@ -369,6 +372,10 @@ def _is_background_image(bg) -> bool:
         return False
     bgname = bg.lower()
     return any(ext in bgname for ext in (".jpg", ".jpeg", ".png"))
+
+
+def _is_skybox_background(bg) -> bool:
+    return isinstance(bg, str) and bg.lower().endswith(".hdr")
 
 
 def _apply_gradient_mode(renderer):

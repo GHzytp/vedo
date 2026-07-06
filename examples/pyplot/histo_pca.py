@@ -33,5 +33,5 @@ histo.rotate_z(90 + angle).pos(ec - 6 * e1)
 gon = Goniometer(ec - 5.5 * e1, ec, [ec[0] - 5.5 * e1[0], ec[1], 0]).z(0.2)
 
 fig = Figure([0, 14], [-4, 9], aspect="equal", title=__doc__)
-fig += [pts, elli.z(-0.1), arrow1, arrow2, gon, histo]
+fig.insert(pts, elli.z(-0.1), arrow1, arrow2, gon, histo)
 fig.show(zoom="tight").close()

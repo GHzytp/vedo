@@ -74,6 +74,39 @@ _reps = (
 )
 
 
+_LOCAL_FALLBACK_FONT = "Normografo"
+
+
+def _font_path(font: str) -> str:
+    return os.path.join(vedo.fonts_path, font + ".npz")
+
+
+def _local_fallback_font() -> tuple[str, str]:
+    font = settings.default_font
+    if utils.is_number(font):
+        font = list(settings.font_parameters.keys())[int(font)]
+
+    if isinstance(font, str):
+        font = font[:1].upper() + font[1:]
+        fontfile = _font_path(font)
+        if os.path.isfile(fontfile):
+            return font, fontfile
+
+    return _LOCAL_FALLBACK_FONT, _font_path(_LOCAL_FALLBACK_FONT)
+
+
+def _load_local_fallback_font(missing_font: str) -> np.ndarray:
+    font, fontfile = _local_fallback_font()
+    try:
+        font_meshes = np.load(fontfile, allow_pickle=True)["font"][0]
+    except Exception as e:
+        vedo.logger.warning(f"font name {font} not found.")
+        raise RuntimeError from e
+
+    vedo.logger.warning(f"font name {missing_font} not found, using {font} instead.")
+    return font_meshes
+
+
 @lru_cache(None)
 def _load_font(font) -> np.ndarray:
     if utils.is_number(font):
@@ -88,11 +121,10 @@ def _load_font(font) -> np.ndarray:
             font = os.path.basename(font).split(".")[0]
         except Exception:
             vedo.logger.warning(f"font {font} not found")
-            font = settings.default_font
-            fontfile = os.path.join(vedo.fonts_path, font + ".npz")
+            return _load_local_fallback_font(os.path.basename(font).split(".")[0])
     else:
         font = font[:1].upper() + font[1:]
-        fontfile = os.path.join(vedo.fonts_path, font + ".npz")
+        fontfile = _font_path(font)
 
         if font not in settings.font_parameters.keys():
             vedo.logger.warning(
@@ -101,8 +133,8 @@ def _load_font(font) -> np.ndarray:
                 f"{list(settings.font_parameters.keys())}\n"
                 f"Using font Normografo instead."
             )
-            font = "Normografo"
-            fontfile = os.path.join(vedo.fonts_path, font + ".npz")
+            font = _LOCAL_FALLBACK_FONT
+            fontfile = _font_path(font)
 
         if not settings.font_parameters[font]["islocal"]:
             font = "https://vedo.embl.es/fonts/" + font + ".npz"
@@ -111,14 +143,13 @@ def _load_font(font) -> np.ndarray:
                 font = os.path.basename(font).split(".")[0]
             except Exception:
                 vedo.logger.warning(f"font {font} not found")
-                font = settings.default_font
-                fontfile = os.path.join(vedo.fonts_path, font + ".npz")
+                return _load_local_fallback_font(os.path.basename(font).split(".")[0])
 
     try:
         font_meshes = np.load(fontfile, allow_pickle=True)["font"][0]
-    except Exception:
+    except Exception as e:
         vedo.logger.warning(f"font name {font} not found.")
-        raise RuntimeError
+        return _load_local_fallback_font(font)
 
     return font_meshes
 

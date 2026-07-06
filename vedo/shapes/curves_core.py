@@ -40,15 +40,21 @@ class Line(Mesh):
                 line width in pixel units
         """
 
-        if isinstance(p1, Points):
-            p1 = p1.pos()
         if isinstance(p0, Points):
-            p0 = p0.pos()
+            if p1 is None:
+                if p0.dataset.GetNumberOfLines() > 0:
+                    p0 = p0.dataset
+                else:
+                    p0 = p0.coordinates
+            else:
+                p0 = p0.pos()
         else:
             try:
                 p0 = p0.dataset
             except AttributeError:
                 pass
+        if isinstance(p1, Points):
+            p1 = p1.pos()
 
         if isinstance(p0, vtki.vtkPolyData):
             poly = p0

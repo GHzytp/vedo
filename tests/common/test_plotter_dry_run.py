@@ -43,3 +43,17 @@ def test_plotter_image_background_is_not_treated_as_color(monkeypatch) -> None:
     plt.close()
 
     assert not any("unknown color name" in warning for warning in warnings)
+
+
+def test_plotter_skybox_background_is_not_treated_as_color(monkeypatch) -> None:
+    warnings = []
+    monkeypatch.setattr(
+        vedo.logger,
+        "warning",
+        lambda message, *args, **kwargs: warnings.append(str(message)),
+    )
+
+    plt = vedo.Plotter(bg="/tmp/skybox.hdr", offscreen=True)
+    plt.close()
+
+    assert not any("unknown color name" in warning for warning in warnings)

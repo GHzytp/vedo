@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 import vedo
+import vedo.shapes.text_utils as text_utils
 from vedo.shapes import (
     Arc,
     Arrow,
@@ -139,6 +140,14 @@ def test_line() -> None:
     assert np.allclose(ln.vertices[-1], [1, 2, 3])
 
 
+def test_line_from_existing_line_object() -> None:
+    pts = [[0, 0, 0], [1, 0, 0], [1, 1, 0]]
+    source = Line(pts)
+    ln = Line(source)
+    assert ln.npoints == source.npoints
+    assert np.allclose(ln.vertices, source.vertices)
+
+
 def test_tube() -> None:
     pts = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [1, 1, 1]]
     tb = Tube(pts, r=0.1)
@@ -180,6 +189,23 @@ def test_text3d() -> None:
     b = tx.bounds()
     assert b[0] >= 0.9  # xmin close to x=1
     assert tx.txt == "Hello"
+
+
+def test_text3d_missing_default_font_falls_back_to_local(monkeypatch) -> None:
+    text_utils._load_font.cache_clear()
+
+    def fail_download(*_args, **_kwargs):
+        raise FileNotFoundError("offline")
+
+    monkeypatch.setattr(vedo.settings, "default_font", "Meson")
+    monkeypatch.setattr(vedo.file_io, "download", fail_download)
+
+    try:
+        tx = Text3D("Fallback")
+    finally:
+        text_utils._load_font.cache_clear()
+
+    assert tx.npoints > 0
 
 
 def test_text3d_justify() -> None:
